@@ -2,6 +2,7 @@ import httpx
 from dotenv import load_dotenv
 import os
 from threat_intel.models import ThreatEvent
+from datetime import datetime, timedelta, timezone
 
 load_dotenv()
 
@@ -40,7 +41,15 @@ def parse_cve(raw: dict) -> ThreatEvent:
 
 def fetch_cves(results_per_page: int = 5) -> list[ThreatEvent]:
     headers = {"apiKey": NVD_API_KEY}
-    params = {"resultsPerPage": results_per_page}
+
+    end_date = datetime.now(timezone.utc)
+    start_date = end_date - timedelta(days=120)
+
+    params = {
+        "resultsPerPage": results_per_page,
+        "pubStartDate": start_date.strftime("%Y-%m-%dT%H:%M:%S.000"),
+        "pubEndDate": end_date.strftime("%Y-%m-%dT%H:%M:%S.000"),
+    }
 
     response = httpx.get(NVD_URL, headers=headers, params=params)
 
@@ -52,3 +61,9 @@ def fetch_cves(results_per_page: int = 5) -> list[ThreatEvent]:
     vulnerabilities = data.get("vulnerabilities", [])
 
     return [parse_cve(item) for item in vulnerabilities]
+
+
+# TO IMPLEMENT NEXT SESSION:
+# Modify params to use pubStartDate and pubEndDate
+# to fetch CVEs from the last 120 days instead of oldest first.
+# Use datetime.now() for end_date and subtract timedelta(days=120) for start_date. Format both as "%Y-%m-%dT%H:%M:%S.000"
