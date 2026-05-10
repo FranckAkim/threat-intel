@@ -56,3 +56,29 @@ if __name__ == "__main__":
     print("Fetching latest CVEs from NVD...")
     data = fetch_cves()
     print_cves(data)
+
+
+# =============================================================
+# ARCHITECTURAL DECISION: How to run this every 15 minutes
+# =============================================================
+#
+# OPTION 1 — External Scheduler (Windows Task Scheduler / cron)
+#   - OS triggers the script every 15 minutes
+#   - Python starts, does its job, exits cleanly
+#   - Pattern: "fire and forget"
+#   - Pro: lightweight, no process sitting in memory
+#   - Con: requires OS-level configuration on every machine
+#
+# OPTION 2 — Python while loop with time.sleep(900)
+#   - Script runs continuously, sleeps between cycles
+#   - Pro: simple, no external setup needed
+#   - Con: if the process crashes at 3am, nothing runs
+#         until someone manually restarts it. Fragile.
+#
+# OPTION 3 — Docker container with built-in scheduler (chosen)
+#   - Fetcher runs inside a container that auto-restarts on crash
+#   - Works identically on any machine, no OS configuration
+#   - Fits naturally into our Kafka pipeline architecture
+#   - This is what we will build in Week 1
+#
+# =============================================================
