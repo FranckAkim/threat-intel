@@ -1,7 +1,7 @@
 import time
 import logging
-from datetime import datetime
 from threat_intel.fetcher import fetch_cves
+from threat_intel.producer import publish_threats
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,18 +20,12 @@ def run_polling_loop(interval_seconds: int = 900):
             threats = fetch_cves()
 
             critical = [t for t in threats if t.is_critical()]
-
             logger.info(f"Fetched {len(threats)} threats, "
                         f"{len(critical)} critical")
 
-            for threat in threats:
-                logger.info(str(threat))
-                if threat.is_critical():
-                    logger.warning(
-                        f"CRITICAL THREAT DETECTED: {threat.id}"
-                    )
+            publish_threats(threats)
 
-            logger.info(f"Next poll in {interval_seconds // 60} minutes")
+            logger.info(f"Next poll in {interval_seconds} seconds")
             time.sleep(interval_seconds)
 
         except KeyboardInterrupt:
