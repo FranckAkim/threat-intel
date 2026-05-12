@@ -1,5 +1,6 @@
 import json
 import logging
+from threat_intel.alerting import send_slack_alert
 from kafka import KafkaConsumer
 from threat_intel.models import ThreatEvent
 
@@ -62,16 +63,11 @@ def process_threat(threat: ThreatEvent) -> None:
 
 
 def send_alert(threat: ThreatEvent) -> None:
-    # Slack integration comes next session
-    # For now we simulate with a clear log message
     logger.warning(
-        f"\n{'='*60}"
-        f"\n🚨 ALERT: {threat.id}"
-        f"\nSeverity: {threat.severity}/10"
-        f"\nPublished: {threat.published}"
-        f"\nDescription: {threat.description[:200]}"
-        f"\n{'='*60}"
+        f"🚨 CRITICAL THREAT: {threat.id} "
+        f"severity={threat.severity}/10"
     )
+    send_slack_alert(threat)
 
 
 def run_consumer() -> None:

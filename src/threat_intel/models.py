@@ -13,7 +13,7 @@ class ThreatEvent:
     cvss_version: Optional[str] = None
 
     def is_critical(self) -> bool:
-        return self.severity >= 9.0
+        return self.severity >= 7.0
 
     def to_dict(self) -> dict:
         return {
