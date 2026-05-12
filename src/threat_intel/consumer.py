@@ -1,6 +1,7 @@
 import json
 import logging
 from threat_intel.alerting import send_slack_alert
+from threat_intel.storage import get_client, ensure_index, store_threat, threat_exists
 from kafka import KafkaConsumer
 from threat_intel.models import ThreatEvent
 
@@ -48,18 +49,23 @@ def hydrate_threat(data: dict) -> ThreatEvent:
     )
 
 
-def process_threat(threat: ThreatEvent) -> None:
+def process_threat(threat: ThreatEvent, es_client) -> None:
     logger.info(f"Processing: {threat.id} [{threat.severity}/10]")
+
+    if threat_exists(es_client, threat.id):
+        logger.info(f"Already processed, skipping: {threat.id}")
+        return
+
+    store_threat(es_client, threat)
 
     if threat.is_critical():
         logger.warning(
             f"CRITICAL THREAT: {threat.id} "
-            f"severity={threat.severity} "
-            f"description={threat.description[:100]}"
+            f"severity={threat.severity}/10"
         )
         send_alert(threat)
     else:
-        logger.info(f"Non-critical threat logged: {threat.id}")
+        logger.info(f"Non-critical threat stored: {threat.id}")
 
 
 def send_alert(threat: ThreatEvent) -> None:
@@ -75,13 +81,16 @@ def run_consumer() -> None:
     logger.info(f"Listening to topic: {THREATS_TOPIC}")
     logger.info(f"Consumer group: {CONSUMER_GROUP}")
 
+    es_client = get_client()
+    ensure_index(es_client)
+
     consumer = create_consumer()
 
     try:
         for message in consumer:
             data = message.value
             threat = hydrate_threat(data)
-            process_threat(threat)
+            process_threat(threat, es_client)
 
     except KeyboardInterrupt:
         logger.info("Consumer stopped by user")
