@@ -88,3 +88,17 @@ def run_consumer() -> None:
     finally:
         consumer.close()
         logger.info("Consumer closed cleanly")
+
+# DEDUPLICATION STRATEGY (to implement with Elasticsearch):
+#
+# Problem: consumer restart re-reads Kafka from offset 0
+#          causing duplicate Slack alerts for already-processed threats
+#
+# Solution: idempotency check before alerting
+#   Step 1: when a threat is processed, store threat.id in Elasticsearch
+#   Step 2: before send_slack_alert(), check if threat.id already exists
+#   Step 3: if exists → skip alert (already handled)
+#   Step 4: if not exists → send alert + store threat.id
+#
+# This makes our consumer idempotent — processing the same
+# message twice produces the same result as processing it once.
