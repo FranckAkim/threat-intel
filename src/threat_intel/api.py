@@ -9,6 +9,9 @@ from threat_intel.storage import (
     threat_exists
 )
 from threat_intel.models import ThreatEvent
+from fastapi.responses import FileResponse
+from pathlib import Path
+
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +38,11 @@ def get_es() -> Elasticsearch:
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "service": "threat-intel-api"}
+
+
+@app.get("/dashboard", include_in_schema=False)
+def dashboard():
+    return FileResponse("dashboard.html")
 
 
 @app.get("/threats/critical")

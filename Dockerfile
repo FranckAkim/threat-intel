@@ -5,6 +5,7 @@ WORKDIR /app
 COPY pyproject.toml .
 COPY uv.lock .
 COPY README.md .
+COPY dashboard.html .
 
 
 RUN pip install uv
@@ -16,3 +17,4 @@ COPY run_api.py .
 EXPOSE 8080
 
 CMD ["uv", "run", "uvicorn", "threat_intel.api:app", "--host", "0.0.0.0", "--port", "8080"]
+
