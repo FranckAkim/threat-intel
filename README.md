@@ -189,3 +189,14 @@ alerts and duplicate database records.
 - **Security mindset** — protecting API keys with .env files,
   understanding prompt injection in LLM systems, and designing
   deduplication to prevent alert fatigue
+
+## 🚀 Live Demo
+
+**API:** https://threat-intel-api.fly.dev  
+**Interactive Docs:** https://threat-intel-api.fly.dev/docs
+
+Try it:
+
+- [GET /threats/stats](https://threat-intel-api.fly.dev/threats/stats)
+- [GET /threats/critical](https://threat-intel-api.fly.dev/threats/critical)
+- [GET /threats](https://threat-intel-api.fly.dev/threats)
