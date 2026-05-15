@@ -1,6 +1,7 @@
 import logging
 from elasticsearch import Elasticsearch
 from threat_intel.models import ThreatEvent
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +10,19 @@ THREATS_INDEX = "threats"
 
 
 def get_client() -> Elasticsearch:
-    return Elasticsearch(ES_HOST)
+    cloud_id = os.getenv("ELASTIC_CLOUD_ID")
+    api_key = os.getenv("ELASTIC_API_KEY")
+    url = os.getenv("ELASTIC_URL")
+
+    if cloud_id and api_key:
+        return Elasticsearch(
+            cloud_id=cloud_id,
+            api_key=api_key
+        )
+    elif url:
+        return Elasticsearch(url)
+    else:
+        return Elasticsearch("http://localhost:9200")
 
 
 def ensure_index(client: Elasticsearch) -> None:
